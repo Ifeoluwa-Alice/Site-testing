@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <title>Cyberdev SOC | Security Operations</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='dashboard.js') }}" defer></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="/" aria-label="Cyberdev SOC home">
+      <span class="brand-mark">S</span>
+      <span><strong>Cyberdev</strong><small>SECURITY OPERATIONS</small></span>
+    </a>
+    <div class="workspace-label">WORKSPACE</div>
+    <nav aria-label="Main navigation">
+      <a class="nav-link active" href="#overview"><span class="nav-icon">◫</span> Overview</a>
+      <a class="nav-link" href="#alerts"><span class="nav-icon">⌁</span> Alerts <span class="nav-count" id="nav-alert-count">—</span></a>
+      <a class="nav-link" href="#incidents"><span class="nav-icon">▣</span> Incidents</a>
+      <a class="nav-link" href="#events"><span class="nav-icon">≋</span> Event stream</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <span class="online-dot"></span>
+      <span><strong>Local sensor</strong><small>DEMO ENVIRONMENT</small></span>
+      <span class="connection-state">●</span>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div class="breadcrumbs">Workspace <span>/</span> <strong>Overview</strong></div>
+      <div class="topbar-right"><span class="live-label"><i></i> LIVE MONITORING</span><span class="avatar">A</span></div>
+    </header>
+
+    <section class="page-heading" id="overview">
+      <div>
+        <p class="eyebrow">SECURITY OPERATIONS CENTER</p>
+        <h1>Good day, Analyst <span class="wave">✳</span></h1>
+        <p class="subheading">Here is your environment's security posture at a glance.</p>
+      </div>
+      <button class="button button-quiet" id="refresh-button" type="button"><span class="refresh-icon">↻</span> Refresh data</button>
+    </section>
+
+    <section class="metric-grid" aria-label="Security metrics">
+      <article class="metric-card">
+        <div class="metric-top"><span>Events (24h)</span><span class="metric-icon blue">≋</span></div>
+        <strong id="metric-events">—</strong><small><span class="metric-note">Normalized telemetry</span></small>
+      </article>
+      <article class="metric-card">
+        <div class="metric-top"><span>Open alerts</span><span class="metric-icon amber">⌁</span></div>
+        <strong id="metric-alerts">—</strong><small><span class="metric-note">Requiring triage</span></small>
+      </article>
+      <article class="metric-card">
+        <div class="metric-top"><span>Active incidents</span><span class="metric-icon red">▣</span></div>
+        <strong id="metric-incidents">—</strong><small><span class="metric-note">Open investigations</span></small>
+      </article>
+      <article class="metric-card posture-card">
+        <div class="metric-top"><span>Detection status</span><span class="metric-icon green">✓</span></div>
+        <strong class="posture-value">Operational</strong><small><span class="metric-note">3 rules enabled</span></small>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel severity-panel">
+        <div class="panel-heading">
+          <div><h2>Alert severity</h2><p>Unresolved alerts by severity</p></div>
+          <span class="subtle-badge">LIVE</span>
+        </div>
+        <div class="severity-chart" id="severity-chart" aria-label="Alert count by severity"></div>
+        <div class="chart-footnote"><span class="online-dot"></span> Detection rules are monitoring incoming events</div>
+      </article>
+      <article class="panel ingest-panel">
+        <div class="panel-heading">
+          <div><h2>Quick event ingest</h2><p>Send a test event to the local detector</p></div>
+          <span class="ingest-icon">⇧</span>
+        </div>
+        <form id="ingest-form">
+          <div class="form-row">
+            <label>Event type
+              <select name="event_type" required>
+                <option value="failed_login">Failed login</option>
+                <option value="process_start">Process start</option>
+                <option value="privilege_escalation">Privilege escalation</option>
+                <option value="vpn_login">VPN login</option>
+              </select>
+            </label>
+            <label>Source
+              <input name="source" maxlength="80" value="analyst-workstation" required>
+            </label>
+          </div>
+          <label>Source IP
+            <input name="source_ip" maxlength="45" placeholder="e.g. 192.0.2.10">
+          </label>
+          <label>Event details
+            <input name="message" maxlength="2000" placeholder="Describe the observed activity" required>
+          </label>
+          <div class="form-bottom">
+            <p class="form-message" id="ingest-message" role="status"></p>
+            <button class="button button-primary" type="submit">Ingest event <span>→</span></button>
+          </div>
+        </form>
+      </article>
+    </section>
+
+    <section class="panel table-panel" id="alerts">
+      <div class="panel-heading table-heading">
+        <div><h2>Priority alerts</h2><p>Review, acknowledge, or promote an alert to an incident</p></div>
+        <a class="text-link" href="#events">View event stream <span>→</span></a>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ALERT</th><th>SEVERITY</th><th>DETECTION</th><th>LAST SEEN</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+          <tbody id="alerts-table"><tr><td colspan="6" class="empty-cell">Loading alerts…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel table-panel" id="incidents">
+      <div class="panel-heading table-heading">
+        <div><h2>Incident queue</h2><p>Track investigations created from security alerts</p></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>INCIDENT</th><th>SEVERITY</th><th>DETECTION</th><th>CREATED</th><th>STATUS</th><th>ACTION</th></tr></thead>
+          <tbody id="incidents-table"><tr><td colspan="6" class="empty-cell">Loading incidents…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel table-panel event-panel" id="events">
+      <div class="panel-heading table-heading">
+        <div><h2>Recent event stream</h2><p>Latest normalized security telemetry</p></div>
+        <span class="subtle-badge">LATEST 50</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>TIME</th><th>SOURCE</th><th>EVENT TYPE</th><th>USER</th><th>DETAILS</th><th>SEVERITY</th></tr></thead>
+          <tbody id="events-table"><tr><td colspan="6" class="empty-cell">Loading events…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    <footer><span>Cyberdev SOC</span><span>Local demo · Sample data · Not for production use</span></footer>
+  </main>
+</body>
+</html>
